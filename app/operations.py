@@ -111,6 +111,27 @@ class IntegerDivide(Operation):
         return a // b
 
 
+class Percentage(Operation):
+    """Percentage strategy: what percent a is of b, calculated as (a / b) * 100."""
+
+    name = "percent"
+
+    def execute(self, a, b):
+        # LBYL: b is the whole amount, so it cannot be zero
+        if b == 0:
+            raise OperationError("Cannot calculate a percentage of zero")
+        return (a / b) * 100
+
+
+class AbsoluteDifference(Operation):
+    """Absolute difference strategy: the distance between a and b."""
+
+    name = "abs_diff"
+
+    def execute(self, a, b):
+        return abs(a - b)
+
+
 class OperationFactory:
     """Factory that creates Operation objects from the name a user types."""
 
@@ -123,6 +144,8 @@ class OperationFactory:
         "root": Root,
         "modulus": Modulus,
         "int_divide": IntegerDivide,
+        "percent": Percentage,
+        "abs_diff": AbsoluteDifference,
     }
 
     @classmethod
