@@ -13,7 +13,9 @@ class Calculator:
 
     def __init__(self, config=None):
         self.config = config or CalculatorConfig()
-        self.history = History(self.config.max_history_size)
+        self.history = History(
+            self.config.max_history_size, self.config.default_encoding
+        )
         self.caretaker = Caretaker()
         self.startup_warning = None
         self._observers = []

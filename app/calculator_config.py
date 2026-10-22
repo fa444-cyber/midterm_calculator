@@ -1,5 +1,6 @@
-"""Configuration management using environment variables and python-dotenv."""
+"""Application settings, loaded from environment variables and an optional .env file."""
 
+import codecs
 import os
 from pathlib import Path
 
@@ -14,19 +15,28 @@ class CalculatorConfig:
     def __init__(self, base_dir=None):
         load_dotenv()
         self.base_dir = Path(base_dir) if base_dir else Path.cwd()
+
+        # Folders: each one falls back to a folder inside base_dir
+        self.log_dir = Path(os.getenv("CALCULATOR_LOG_DIR", self.base_dir / "logs"))
         self.history_dir = Path(
             os.getenv("CALCULATOR_HISTORY_DIR", self.base_dir / "history")
         )
+
+        # Files: a file name (or full path) that lives inside the matching folder
+        self.log_file = self.log_dir / os.getenv(
+            "CALCULATOR_LOG_FILE", "calculator.log"
+        )
+        self.history_file = self.history_dir / os.getenv(
+            "CALCULATOR_HISTORY_FILE", "calculation_history.csv"
+        )
+
+        # Numbers and switches
         self.max_history_size = self._get_int("CALCULATOR_MAX_HISTORY_SIZE", 100)
         self.auto_save = self._get_bool("CALCULATOR_AUTO_SAVE", True)
         self.precision = self._get_int("CALCULATOR_PRECISION", 4)
         self.max_input_value = self._get_float("CALCULATOR_MAX_INPUT_VALUE", 1e6)
+        self.default_encoding = os.getenv("CALCULATOR_DEFAULT_ENCODING", "utf-8")
         self.validate()
-
-    @property
-    def history_file(self):
-        """Full path of the CSV file where history is saved."""
-        return self.history_dir / "calculation_history.csv"
 
     def validate(self):
         """LBYL: check that every setting makes sense before the app uses it."""
@@ -36,6 +46,13 @@ class CalculatorConfig:
             raise ConfigurationError("CALCULATOR_PRECISION cannot be negative")
         if self.max_input_value <= 0:
             raise ConfigurationError("CALCULATOR_MAX_INPUT_VALUE must be positive")
+        try:  # EAFP: let Python tell us whether it knows this encoding
+            codecs.lookup(self.default_encoding)
+        except LookupError:
+            raise ConfigurationError(
+                "CALCULATOR_DEFAULT_ENCODING must be a valid text encoding, "
+                f"got '{self.default_encoding}'"
+            )
 
     @staticmethod
     def _get_int(name, default):

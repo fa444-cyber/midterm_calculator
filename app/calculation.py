@@ -27,5 +27,18 @@ class Calculation:
             "timestamp": self.timestamp.isoformat(),
         }
 
+    @classmethod
+    def from_dict(cls, row):
+        """Rebuild a calculation from one history row (the reverse of to_dict)."""
+        calculation = cls(
+            row["operation"],
+            row["a"],
+            row["b"],
+            timestamp=datetime.fromisoformat(row["timestamp"]),
+        )
+        # Keep the result that was saved, so rounding is not applied twice
+        calculation.result = row["result"]
+        return calculation
+
     def __str__(self):
         return f"{self.operation_name}({self.a}, {self.b}) = {self.result}"
