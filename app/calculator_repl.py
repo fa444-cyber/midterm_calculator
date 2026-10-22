@@ -1,8 +1,13 @@
 """Command-line REPL for the enhanced calculator."""
 
+import logging
+
 from app.calculator import Calculator
-from app.exceptions import CalculatorError
+from app.exceptions import CalculatorError, OperationError, ValidationError
+from app.logger import LOGGER_NAME
 from app.operations import OperationFactory
+
+logger = logging.getLogger(LOGGER_NAME)
 
 
 def help_text():
@@ -52,13 +57,23 @@ def build_commands(calculator):
     }
 
 
+def log_failure(user_input, error):
+    """Log a failed command: a WARNING when the user can fix it, an ERROR otherwise."""
+    if isinstance(error, (ValidationError, OperationError)):
+        logger.warning("Rejected input %r: %s", user_input, error)
+    else:
+        logger.error("Command %r failed: %s", user_input, error)
+
+
 def repl(calculator=None):
     """Run the Read-Eval-Print Loop until the user types exit."""
     calculator = calculator or Calculator()
     commands = build_commands(calculator)
 
+    logger.info("Calculator started")
     print("Welcome to the Enhanced Calculator!")
     if calculator.startup_warning:
+        logger.warning("Startup problem: %s", calculator.startup_warning)
         print(f"Warning: {calculator.startup_warning}")
     print(help_text())
     print()
@@ -69,15 +84,18 @@ def repl(calculator=None):
 
         if command == "exit":
             print("Goodbye!")
+            logger.info("Calculator exited")
             break
 
         try:  # EAFP: just try it, and report any calculator error
             # LBYL: check if it is a special command before parsing a calculation
             if command in commands:
                 print(commands[command]())
+                logger.info("Command executed: %s", command)
             else:
                 calculation = calculator.calculate_from_text(user_input)
                 print(f"Result: {calculation.result}")
         except CalculatorError as error:
+            log_failure(user_input, error)
             print(f"Error: {error}")
         print()
