@@ -4,20 +4,15 @@ import logging
 
 from app.calculator import Calculator
 from app.exceptions import CalculatorError, OperationError, ValidationError
+from app.help_menu import build_help_menu
 from app.logger import LOGGER_NAME
-from app.operations import OperationFactory
 
 logger = logging.getLogger(LOGGER_NAME)
 
 
 def help_text():
-    """Return the help message."""
-    operations = ", ".join(OperationFactory.available_operations())
-    return (
-        "Usage: <operation> <number> <number>   (example: add 2 3)\n"
-        f"Operations: {operations}\n"
-        "Commands: help, history, clear, undo, redo, save, load, exit"
-    )
+    """Return the help menu, built on the fly with the decorator pattern."""
+    return build_help_menu().render()
 
 
 def build_commands(calculator):
