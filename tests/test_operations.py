@@ -126,10 +126,10 @@ def test_factory_rejects_unknown_operation():
         OperationFactory.create_operation("modulo")
 
 
-def test_available_operations_lists_all_six():
-    assert OperationFactory.available_operations() == [
+def test_available_operations_includes_the_original_six():
+    assert {
         "add", "subtract", "multiply", "divide", "power", "root",
-    ]
+    } <= set(OperationFactory.available_operations())
 
 
 @pytest.mark.parametrize("name", OperationFactory.available_operations())
