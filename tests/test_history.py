@@ -73,8 +73,8 @@ def test_display_shows_the_calculations():
 def test_snapshot_is_a_copy():
     history = make_history(1)
     snapshot = history.snapshot()
-    snapshot.loc[0, "a"] = 99
-    assert history.to_dataframe()["a"].tolist() == [1]
+    snapshot.clear()
+    assert len(history) == 1
 
 
 def test_restore_replaces_the_history():
