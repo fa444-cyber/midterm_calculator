@@ -1,4 +1,4 @@
-"""Arithmetic operations using the Strategy and Factory design patterns."""
+"""Arithmetic operations (Strategy pattern) and the OperationFactory."""
 
 from abc import ABC, abstractmethod
 
@@ -6,13 +6,13 @@ from app.exceptions import OperationError
 
 
 class Operation(ABC):
-    """Strategy interface: every operation knows how to execute itself."""
+    """Strategy interface: every operation takes two numbers and returns a result."""
 
     name = ""
 
     @abstractmethod
     def execute(self, a, b):
-        """Perform the operation on a and b and return the result."""
+        """Compute the result for a and b."""
         pass  # pragma: no cover
 
 
@@ -87,6 +87,30 @@ class Root(Operation):
         return a ** (1 / b)
 
 
+class Modulus(Operation):
+    """Modulus strategy: the remainder when a is divided by b."""
+
+    name = "modulus"
+
+    def execute(self, a, b):
+        # LBYL: the remainder of a division by zero is undefined
+        if b == 0:
+            raise OperationError("Cannot take the modulus with zero")
+        return a % b
+
+
+class IntegerDivide(Operation):
+    """Integer division strategy: a divided by b, rounded down to a whole number."""
+
+    name = "int_divide"
+
+    def execute(self, a, b):
+        # LBYL: check for the problem before dividing
+        if b == 0:
+            raise OperationError("Cannot divide by zero")
+        return a // b
+
+
 class OperationFactory:
     """Factory that creates Operation objects from the name a user types."""
 
@@ -97,6 +121,8 @@ class OperationFactory:
         "divide": Divide,
         "power": Power,
         "root": Root,
+        "modulus": Modulus,
+        "int_divide": IntegerDivide,
     }
 
     @classmethod
