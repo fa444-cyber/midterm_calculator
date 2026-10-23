@@ -9,6 +9,7 @@ class Operation(ABC):
     """Strategy interface: every operation takes two numbers and returns a result."""
 
     name = ""
+    description = ""
 
     @abstractmethod
     def execute(self, a, b):
@@ -20,6 +21,7 @@ class Add(Operation):
     """Addition strategy."""
 
     name = "add"
+    description = "Add two numbers"
 
     def execute(self, a, b):
         return a + b
@@ -29,6 +31,7 @@ class Subtract(Operation):
     """Subtraction strategy."""
 
     name = "subtract"
+    description = "Subtract the second number from the first"
 
     def execute(self, a, b):
         return a - b
@@ -38,6 +41,7 @@ class Multiply(Operation):
     """Multiplication strategy."""
 
     name = "multiply"
+    description = "Multiply two numbers"
 
     def execute(self, a, b):
         return a * b
@@ -47,6 +51,7 @@ class Divide(Operation):
     """Division strategy."""
 
     name = "divide"
+    description = "Divide the first number by the second"
 
     def execute(self, a, b):
         # LBYL: check for the problem before dividing
@@ -59,6 +64,7 @@ class Power(Operation):
     """Exponentiation strategy."""
 
     name = "power"
+    description = "Raise the first number to the power of the second"
 
     def execute(self, a, b):
         # LBYL: zero to a negative power is undefined
@@ -78,6 +84,7 @@ class Root(Operation):
     """Root strategy: the b-th root of a."""
 
     name = "root"
+    description = "Take the root of the first number (the second is the degree)"
 
     def execute(self, a, b):
         if b == 0:
@@ -91,6 +98,7 @@ class Modulus(Operation):
     """Modulus strategy: the remainder when a is divided by b."""
 
     name = "modulus"
+    description = "Remainder after dividing the first number by the second"
 
     def execute(self, a, b):
         # LBYL: the remainder of a division by zero is undefined
@@ -103,6 +111,7 @@ class IntegerDivide(Operation):
     """Integer division strategy: a divided by b, rounded down to a whole number."""
 
     name = "int_divide"
+    description = "Divide and round down to a whole number"
 
     def execute(self, a, b):
         # LBYL: check for the problem before dividing
@@ -115,6 +124,7 @@ class Percentage(Operation):
     """Percentage strategy: what percent a is of b, calculated as (a / b) * 100."""
 
     name = "percent"
+    description = "What percent the first number is of the second"
 
     def execute(self, a, b):
         # LBYL: b is the whole amount, so it cannot be zero
@@ -127,6 +137,7 @@ class AbsoluteDifference(Operation):
     """Absolute difference strategy: the distance between a and b."""
 
     name = "abs_diff"
+    description = "Distance between the two numbers"
 
     def execute(self, a, b):
         return abs(a - b)
@@ -160,3 +171,11 @@ class OperationFactory:
     def available_operations(cls):
         """Return the list of supported operation names."""
         return list(cls._operations)
+
+    @classmethod
+    def describe_operations(cls):
+        """Return (name, description) pairs, so the help menu can list every operation."""
+        return [
+            (name, operation_class.description)
+            for name, operation_class in cls._operations.items()
+        ]

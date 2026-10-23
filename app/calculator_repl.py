@@ -3,51 +3,50 @@
 import logging
 
 from app.calculator import Calculator
+from app.colors import color_help, failure, heading, info, success, warning
 from app.exceptions import CalculatorError, OperationError, ValidationError
+from app.help_menu import build_help_menu
 from app.logger import LOGGER_NAME
-from app.operations import OperationFactory
 
 logger = logging.getLogger(LOGGER_NAME)
 
 
 def help_text():
-    """Return the help message."""
-    operations = ", ".join(OperationFactory.available_operations())
-    return (
-        "Usage: <operation> <number> <number>   (example: add 2 3)\n"
-        f"Operations: {operations}\n"
-        "Commands: help, history, clear, undo, redo, save, load, exit"
-    )
+    """Return the help menu, built on the fly with the decorator pattern."""
+    return build_help_menu().render()
 
 
 def build_commands(calculator):
     """Map each special command to a function that returns a message."""
+
+    def show_help():
+        return color_help(help_text())
 
     def show_history():
         return calculator.history.display()
 
     def clear():
         calculator.clear_history()
-        return "History cleared."
+        return info("History cleared.")
 
     def undo():
         calculator.undo()
-        return "Undone."
+        return info("Undone.")
 
     def redo():
         calculator.redo()
-        return "Redone."
+        return info("Redone.")
 
     def save():
         calculator.save_history()
-        return "History saved."
+        return info("History saved.")
 
     def load():
         calculator.load_history()
-        return "History loaded."
+        return info("History loaded.")
 
     return {
-        "help": help_text,
+        "help": show_help,
         "history": show_history,
         "clear": clear,
         "undo": undo,
@@ -71,11 +70,11 @@ def repl(calculator=None):
     commands = build_commands(calculator)
 
     logger.info("Calculator started")
-    print("Welcome to the Enhanced Calculator!")
+    print(heading("Welcome to the Enhanced Calculator!"))
     if calculator.startup_warning:
         logger.warning("Startup problem: %s", calculator.startup_warning)
-        print(f"Warning: {calculator.startup_warning}")
-    print(help_text())
+        print(warning(f"Warning: {calculator.startup_warning}"))
+    print(color_help(help_text()))
     print()
 
     while True:
@@ -83,7 +82,7 @@ def repl(calculator=None):
         command = user_input.lower()
 
         if command == "exit":
-            print("Goodbye!")
+            print(info("Goodbye!"))
             logger.info("Calculator exited")
             break
 
@@ -94,8 +93,8 @@ def repl(calculator=None):
                 logger.info("Command executed: %s", command)
             else:
                 calculation = calculator.calculate_from_text(user_input)
-                print(f"Result: {calculation.result}")
+                print(success(f"Result: {calculation.result}"))
         except CalculatorError as error:
             log_failure(user_input, error)
-            print(f"Error: {error}")
+            print(failure(f"Error: {error}"))
         print()
